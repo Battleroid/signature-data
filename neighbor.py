@@ -1,5 +1,4 @@
-from operator import sub
-from operator import ge, gt, le, lt
+import operator
 
 
 class Neighbor(object):
@@ -16,29 +15,28 @@ class Neighbor(object):
         operation: Operation from :py:class:`operator` to check data against.
             Default is :py:func:`operator.le`.
     """
-    def __init__(self, data, maximum_distance=1, operation=le):
+    def __init__(self, data, maximum_distance=1, operation=operator.le):
         self.data = data
         self.maximum_distance = maximum_distance
         self.operation = operation
 
-    def distance(opposing):
+    def distance(self, opposing):
         """Return absolute distance of opposing set of data against base set.
         """
-        return map(lambda x,y: abs(sub(x, y)), self.data, opposing)
+        return map(lambda x, y: abs(operator.sub(x, y)), self.data, opposing)
 
-    def check(opposing):
+    def check(self, opposing):
         """Return whether or not the opposing set is a neighbor.
 
         Args:
             Opposing (List[int]): Set of data to check against.
 
         Returns:
-            bool: Whether or not the observation is a neighbor.
+            bool: Whether or not the observation is a neighbor. Always returns
+                True if opposing data equals the base data (checking itself).
         """
-        r = self.distance(opposing)
-        return self.operation(any(r), maximum_distance)
-
-
-class AdjacencyMatrix(object):
-    def __init__(self):
-        raise NotImplementedError
+        if not opposing == self.data:
+            r = self.distance(opposing)
+            return self.operation(any(r), self.maximum_distance)
+        else:
+            return True
