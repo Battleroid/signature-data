@@ -20,10 +20,10 @@ class Neighbor(object):
         self.maximum_distance = maximum_distance
         self.operation = operation
 
-    def distance(self, opposing):
+    def diff(self, opposing):
         """Return absolute distance of opposing set of data against base set.
         """
-        return map(lambda x, y: abs(operator.sub(x, y)), self.data, opposing)
+        return list(map(lambda x, y: abs(operator.sub(x, y)), self.data, opposing))
 
     def check(self, opposing):
         """Return whether or not the opposing set is a neighbor.
@@ -35,8 +35,16 @@ class Neighbor(object):
             bool: Whether or not the observation is a neighbor. Always returns
                 True if opposing data equals the base data (checking itself).
         """
-        if not opposing == self.data:
-            r = self.distance(opposing)
-            return self.operation(any(r), self.maximum_distance)
+        if opposing != self.data:
+            # It is not itself, therefore check to see if it is a neighbor.
+            r = self.diff(opposing)
+            s = sum(r)
+            t = 0
+            for _ in r:
+                if _ != 0:
+                    t += 1
+            st = float(s) / float(t)
+            return self.operation(st, self.maximum_distance)
         else:
+            # If it is itself, it is a neighbor to itself.
             return True
