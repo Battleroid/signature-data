@@ -43,7 +43,7 @@ def main(filename, output, keep_locuses=False):
     if not output: output = 'results.txt'
     with open(output, 'w') as f:
         for col in numeric_columns:
-            f.write('Column {} ({} total outliers): {}\n'
+            f.write('Column {} ({} total outliers):\n\t{}\n\n'
                     .format(col, len(outliers[col]), ', '.join(outliers[col])))
 
 if __name__ == '__main__':
