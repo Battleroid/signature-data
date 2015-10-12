@@ -43,8 +43,12 @@ def main(filename, output, keep_locuses=False):
     if not output: output = 'results.txt'
     with open(output, 'w') as f:
         for col in numeric_columns:
-            f.write('Column {} ({} total outliers):\n\t{}\n\n'
-                    .format(col, len(outliers[col]), ', '.join(outliers[col])))
+            f.write('Column {col} ({cnt} total outliers) (sd: {std}, avg: {avg}):\n\t{lbls}\n\n'
+                    .format(
+                        col=col, 
+                        cnt=len(outliers[col]), 
+                        lbls=', '.join(outliers[col]),
+                        std=column_attrs[col].std, avg=column_attrs[col].avg))
 
 if __name__ == '__main__':
     args = docopt(__doc__)
