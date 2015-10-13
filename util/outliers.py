@@ -11,7 +11,6 @@ Options:
     -f <output>  Save to file instead of stdout.
 """
 
-import textwrap
 import pandas as pd
 from docopt import docopt
 from collections import namedtuple, defaultdict
@@ -34,7 +33,7 @@ def get_outliers(data, attrs):
 def save_results(data, columns, filename):
     with open(filename, 'w') as f:
         for column in columns:
-            labels = textwrap.dedent(', '.join(data[column])).strip()
+            labels = ', '.join(data[column])
             f.write('{column} ({total}): '.format(column=column, total=len(data[column])))
             f.write(labels)
             f.write(os.linesep)
