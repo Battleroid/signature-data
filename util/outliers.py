@@ -2,24 +2,47 @@
 Find outliers for each column.
 
 Usage:
-    outliers.py [--locuses] <file> [-o <output> | --output <output>]
+    outliers.py [--locuses] <file> [-f <output>]
     outliers.py -h | --help
 
 Options:
     -h --help  Show this screen.
     --locuses  Include locuses.
+    -f <output>  Save to file instead of stdout.
 """
 
+import textwrap
 import pandas as pd
 from docopt import docopt
 from collections import namedtuple, defaultdict
+import os
 
-
-# Attributes for each column
 attrs = namedtuple('attrs', 'std, avg')
 
+def get_outliers(data, attrs):
+    outliers = defaultdict(list)
+    for column, val in attrs.items():
+        l = 2. * val.std - val.avg
+        h = 2. * val.std + val.avg
+        for idx in xrange(0, len(data)):
+            x = data.iloc[idx][column]
+            if not(l <= x <= h):
+                label = data.iloc[idx]['Label']
+                outliers[column].append(label)
+    return outliers
 
-def main(filename, output, keep_locuses=False):
+def save_results(data, columns, filename):
+    with open(filename, 'w') as f:
+        for column in columns:
+            labels = textwrap.dedent(', '.join(data[column])).strip()
+            f.write('{column} ({total}): '.format(column=column, total=len(data[column])))
+            f.write(labels)
+            f.write(os.linesep)
+        common = set.intersection(*map(set, data.values()))
+        if common:
+            f.write('Common rows: {}'.format(', '.join(common)))
+
+def main(filename, save, keep_locuses=False):
     data = pd.read_csv(filename)
     locuses = data.filter(like='Locus').columns
     # Drop locuses if not needed
@@ -31,25 +54,18 @@ def main(filename, output, keep_locuses=False):
     for col in numeric_columns:
         column_attrs[col] = attrs(std=data[col].std(), avg=data[col].mean())
     # Collect outliers
-    outliers = defaultdict(list)
-    for col, v in column_attrs.items():
-        low = 2. * v.std - v.avg
-        high = 2. * v.std + v.avg
-        for idx in xrange(0, len(data)):
-            v = data.iloc[idx][col]
-            if not(low <= v <= high):
-                outliers[col].append(data.iloc[idx]['Label'])
-    # Write results (in order, might as well)
-    if not output: output = 'results.txt'
-    with open(output, 'w') as f:
-        for col in numeric_columns:
-            f.write('Column {col} ({cnt} total outliers) (sd: {std}, avg: {avg}):\n\t{lbls}\n\n'
-                    .format(
-                        col=col, 
-                        cnt=len(outliers[col]), 
-                        lbls=', '.join(outliers[col]),
-                        std=column_attrs[col].std, avg=column_attrs[col].avg))
+    outliers = get_outliers(data, column_attrs)
+    # Save or echo results
+    if save:
+        save_results(outliers, data._get_numeric_data(), save)
+    else:
+        for column in data._get_numeric_data():
+            labels = textwrap.dedent(', '.join(outliers[column])).strip()
+            print('{column} ({total}): {labels}'.format(column=column, total=len(outliers[column]), labels=labels))
+        common = set.intersection(*map(set, outliers.values()))
+        if common:
+            print('Common rows: {}'.format(', '.join(common)))
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    main(args['<file>'], args['<output>'], args['--locuses'])
+    main(args['<file>'], args['-f'], args['--locuses'])
