@@ -59,7 +59,7 @@ def main(filename, save, keep_locuses=False):
         save_results(outliers, data._get_numeric_data(), save)
     else:
         for column in data._get_numeric_data():
-            labels = textwrap.dedent(', '.join(outliers[column])).strip()
+            labels = ', '.join(outliers[column])
             print('{column} ({total}): {labels}'.format(column=column, total=len(outliers[column]), labels=labels))
         common = set.intersection(*map(set, outliers.values()))
         if common:
