@@ -110,16 +110,25 @@ def main(filename, save, drop=False, keep_locuses=False):
     column_attrs = dict()
     if not keep_locuses:
         lcs = data.filter(like='Locus').columns
-        numeric_columns = data.drop(lcs, axis=1)._get_numeric_data().columns
+        numeric_columns = data.drop(lcs, axis=1)
+        numeric_columns = numeric_columns._get_numeric_data()
     else:
-        numeric_columns = data._get_numeric_data().columns
+        numeric_columns = data._get_numeric_data()
+    # If average column exists, then set numeric_columns to use only the average columns
+    average_column = numeric_columns.filter(like='AVG').columns
+    if any(average_column):
+        numeric_columns = average_column
+    else:
+        numeric_columns = numeric_columns.filter(like='Nr')
+    print 'Using these columns: {}'.format(', '.join(numeric_columns))
     for col in numeric_columns:
         column_attrs[col] = attrs(std=data[col].std(), avg=data[col].mean())
     outliers = get_outliers(data, column_attrs, keep_locuses)
     if save:
         save_outliers(outliers, outliers.keys(), column_attrs, save)
     else:
-        for column in data._get_numeric_data():
+        # for column in data._get_numeric_data():
+        for column in column_attrs.keys():
             labels = ', '.join(outliers[column])
             print('{column} ({total}): {labels}'.format(column=column, total=len(outliers[column]), labels=labels))
         common = set.intersection(*map(set, outliers.values()))
