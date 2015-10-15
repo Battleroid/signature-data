@@ -32,22 +32,25 @@ def get_outliers(data, attrs, keep_locuses=False):
         for idx in xrange(0, len(temp)):
             x = temp.iloc[idx][column]
             if not(l <= x <= h):
-                label = temp.iloc[idx]['Label']
+                label = temp.iloc[idx]['Ri']
                 outliers[column].append(label)
     return outliers
 
 def save_outliers(data, columns, attrs, filename):
     with open(filename, 'w') as f:
+        total = 0
         for column in columns:
+            total += len(data[column])
             avg = attrs[column].avg
             std = attrs[column].std
             labels = ', '.join(data[column])
-            f.write('{column} ({total}): '.format(column=column, total=len(data[column])))
+            f.write('{column} (STD: {std}, AVG: {avg}, TOTAL: {total}): '.format(column=column, std=std, avg=avg, total=len(data[column])))
             f.write(labels)
             f.write(os.linesep)
         common = set.intersection(*map(set, data.values()))
         if common:
             f.write('Common rows: {}'.format(', '.join(common)))
+        f.write('Total outliers: {}'.format(total))
 
 def flatten(*args):
     for x in args:
@@ -63,7 +66,7 @@ def do_drop_right(data, outliers, filename='dropped.csv'):
     if 'Unnamed: 0' in data.columns:
         data.drop(data[['Unnamed: 0']], axis=1, inplace=True)
     for o in outliers_set:
-        r = data.loc[data['Label'] == o]
+        r = data.loc[data['Ri'] == o]
         ridx = r.index
         data.drop(data.index[ridx], inplace=True)
         data.reset_index(inplace=True, drop=True)
