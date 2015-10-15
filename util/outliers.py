@@ -1,4 +1,5 @@
 # TODO: Add verbose option
+# TODO: Add ability to specify which column to be used for row identification.
 """
 Find outliers for each column.
 
@@ -21,6 +22,18 @@ import os
 attrs = namedtuple('attrs', 'std, avg')
 
 def get_outliers(data, attrs, keep_locuses=False):
+    """From data and attributes for given column discover outliers.
+
+    Args:
+        data (:py:class:`pandas.DataFrame`): DataFrame of data to be inspected
+        attrs (dict): Dictionary of columns with standard deviation and mean
+            of columns to be inspected.
+        keep_locuses (bool): Whether or not to use locuses when finding
+            outliers. Defaults to False.
+    
+    Returns:
+        Dictionary of outliers with column as key.
+    """
     temp = data
     if not keep_locuses:
         locuses = temp.filter(like='Locus').columns
@@ -37,6 +50,15 @@ def get_outliers(data, attrs, keep_locuses=False):
     return outliers
 
 def save_outliers(data, columns, attrs, filename):
+    """Save outlier information to file.
+
+    Args:
+        data (dict): Dictionary of outlier information.
+        columns (List): List of columns that were inspected.
+        attrs (dict): Dictionary of columns and their corresponding standard
+            deviation and mean.
+        filename (str): Filename to save output to.
+    """
     with open(filename, 'w') as f:
         total = 0
         for column in columns:
@@ -53,6 +75,7 @@ def save_outliers(data, columns, attrs, filename):
         f.write('Total outliers: {}'.format(total))
 
 def flatten(*args):
+    """Flattens lists."""
     for x in args:
         if hasattr(x, '__iter__'):
             for y in flatten(*x):
@@ -61,6 +84,15 @@ def flatten(*args):
             yield x
 
 def do_drop_right(data, outliers, filename='dropped.csv'):
+    """Properly drop outliers from DataFrame.
+
+    Args:
+        data (:py:class:`pandas.DataFrame`): original data to drop records
+            from.
+        outliers (dict): Dict of columns and their outliers.
+        filename (str): Filename to save results to. Defaults to
+            'dropped.csv'.
+    """
     flattened_outliers = list(flatten(outliers.values()))
     outliers_set = set(sorted(flattened_outliers))
     if 'Unnamed: 0' in data.columns:
@@ -72,6 +104,7 @@ def do_drop_right(data, outliers, filename='dropped.csv'):
         data.reset_index(inplace=True, drop=True)
     data.to_csv(filename, index=False)
 
+# TODO: Clean this mess up.
 def main(filename, save, drop=False, keep_locuses=False):
     data = pd.read_csv(filename)
     column_attrs = dict()
