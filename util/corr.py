@@ -42,15 +42,15 @@ def main(args):
         print 'Using {} correlation coefficient.'.format('own' if use_own else 'Pandas')
 
     # build list of correlations
-    corr_df = pd.DataFrame(columns=nr, index=nr)
-    for x in attrs:
-        x_df = attrs[x]
-        for y in attrs:
-            y_df = attrs[y]
-            if use_own:
+    if use_own:
+        corr_df = pd.DataFrame(columns=nr, index=nr)
+        for x in attrs:
+            x_df = attrs[x]
+            for y in attrs:
+                y_df = attrs[y]
                 corr_df[x][y] = corr_coef(attrs, x, y)
-            else:
-                corr_df[x][y] = x_df.corr(y_df)
+    else:
+        corr_df = attrs.corr()
 
     # save 
     corr_df.to_csv(outfile)
