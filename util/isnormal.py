@@ -82,7 +82,7 @@ def main(args):
 
     # save results to csv
     out_df = pd.DataFrame(rows, columns=fields)
-    print out_df.head()
+    out_df.to_csv('results.csv')
 
 
 if __name__ == '__main__':
