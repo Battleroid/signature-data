@@ -4,6 +4,7 @@ Usage:
 
 Options:
     -v --verbose  Verbose messages.
+    -c --coef  Use own correlation coefficient process, not from Pandas.
     -h --help  Show this screen.
 """
 
@@ -12,10 +13,19 @@ import pandas as pd
 from docopt import docopt
 
 
+def corr_coef(df, a, b):
+    a_std, b_std = df[a].std(), df[b].std()
+    a_avg, b_avg = df[a].mean(), df[b].mean()
+    pairs = zip(df[a], df[b])
+    r = sum([(ai - a_avg) * (bi - b_avg) for ai, bi in pairs]) / (float(len(df[a])) * a_std * b_std)
+    return r
+
+
 def main(args):
     # setup options and params
     filename = args['<file>']
     outfile = args['<outfile>']
+    use_own = args['--coef']
     verbose = args['--verbose']
 
     # load
@@ -29,6 +39,7 @@ def main(args):
     # show cols
     if verbose:
         print 'Using columns:', nr
+        print 'Using {} correlation coefficient.'.format('own' if use_own else 'Pandas')
 
     # build list of correlations
     corr_df = pd.DataFrame(columns=nr, index=nr)
@@ -36,7 +47,10 @@ def main(args):
         x_df = attrs[x]
         for y in attrs:
             y_df = attrs[y]
-            corr_df[x][y] = x_df.corr(y_df)
+            if use_own:
+                corr_df[x][y] = corr_coef(attrs, x, y)
+            else:
+                corr_df[x][y] = x_df.corr(y_df)
 
     # save 
     corr_df.to_csv(outfile)
