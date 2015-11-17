@@ -1,6 +1,6 @@
 """
 Usage:
-    isnormal.py [options] <file>
+    isnormal.py [options] <file> <outfile>
 
 Options:
     -v --verbose  Verbose messages.
@@ -24,6 +24,7 @@ def quartiles(avg, std):
 def main(args):
     # set options and params
     filename = args['<file>']
+    outfile = args['<outfile>']
     verbose = args['--verbose']
 
     # load
@@ -33,6 +34,9 @@ def main(args):
     nr = df.filter(like='Nr').columns
     nr = [x for x in nr if 'Locus' not in x]
     attrs = df._get_numeric_data()[nr]
+
+    if verbose:
+        print 'Using columnns:', nr
     
     # build quartiles
     nr_quartiles = dict()
@@ -82,7 +86,7 @@ def main(args):
 
     # save results to csv
     out_df = pd.DataFrame(rows, columns=fields)
-    out_df.to_csv('results.csv')
+    out_df.to_csv(outfile, index=False)
 
 
 if __name__ == '__main__':
