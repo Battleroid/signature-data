@@ -6,3 +6,4 @@
 * 'data/working' contains files for each region from CSV data
 * 'data/neighbors' contains adjacency matrices for each region in CSV format
 * 'util' contains utilities used to process information
+* 'misc' contains some older unused junk
