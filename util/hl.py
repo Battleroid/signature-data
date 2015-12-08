@@ -12,7 +12,7 @@ import pandas as pd
 
 
 def pair(l):
-    "pair single list by getting opposite steps (even/odd) pairs, sloppy but it works"
+    "pair single list by getting opposite steps (even/odd) pairs"
     return zip(l[::2], l[1::2])
 
 
@@ -24,14 +24,15 @@ def main(args):
     # setup locii
     nr_cols = df.filter(like='Nr').columns
     locii_cols = pair(nr_cols)
-    pair_hl = dict()
+    pair_h = dict()
 
-    # calculate per locus (pair) HL
+    # calculate per locus (pair) H (H ith)
     for p in locii_cols:
         p1, p2 = p[0], p[1]
         combined = pd.concat([df[p1], df[p2]])
-        freqs = [pow(float(x) / len(combined), 2) for x in combined.value_counts()]
-        pair_hl[p1] = 1 - sum(freqs)
+        freqs = [pow(float(x) / len(combined), 2)
+                for x in combined.value_counts()]
+        pair_h[p1] = 1 - sum(freqs)
 
     # calculate HL for each record
     for idx in range(len(df)):
@@ -40,9 +41,9 @@ def main(args):
         for l, n in locii_cols:
             a, b = row[l], row[n]
             if a == b:
-                ho += pair_hl[l]
+                ho += pair_h[l]
             else:
-                he += pair_hl[l]
+                he += pair_h[l]
         r = float(ho) / (float(ho) + float(he))
         results_df = results_df.append(pd.DataFrame({'Calculated HL': [r]}))
 
