@@ -5,3 +5,4 @@ __pycache__/
 .~lock*
 *.docx
 util/*.csv
+*.ipynb_checkpoints
